@@ -18,7 +18,6 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         let asset = AVURLAsset(url: url)
         let item = AVPlayerItem(asset: asset)
         
-        // Cero buffer previo para reproducción en tiempo real estricto
         item.preferredForwardBufferDuration = 0.5
         
         let player = AVPlayer(playerItem: item)
@@ -30,9 +29,10 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.videoGravity = .resizeAspect
         
-        context.coordinator.observe(item: item, player: player, controller: controller)
+        context.coordinator.observe(item: item, player: player)
         
-        player.play()
+        // Fuerza el inicio inmediato sin pausas
+        player.playImmediately(atRate: 1.0)
         return controller
     }
 
@@ -48,8 +48,8 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
             let newPlayer = AVPlayer(playerItem: newItem)
             newPlayer.automaticallyWaitsToMinimizeStalling = false
             uiViewController.player = newPlayer
-            context.coordinator.observe(item: newItem, player: newPlayer, controller: uiViewController)
-            newPlayer.play()
+            context.coordinator.observe(item: newItem, player: newPlayer)
+            newPlayer.playImmediately(atRate: 1.0)
         }
     }
 
@@ -57,32 +57,28 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         Coordinator()
     }
 
-    class Coordinator: NSObject, AVPictureInPictureControllerDelegate {
+    class Coordinator: NSObject {
         var statusObserver: NSKeyValueObservation?
-        var pipController: AVPictureInPictureController?
 
-        func observe(item: AVPlayerItem, player: AVPlayer, controller: AVPlayerViewController) {
+        func observe(item: AVPlayerItem, player: AVPlayer) {
             statusObserver?.invalidate()
             statusObserver = item.observe(\.status, options: [.new]) { item, _ in
                 if item.status == .readyToPlay {
-                    // Salto automático al borde exacto de la transmisión en vivo (0 delay)
                     if let liveEnd = item.seekableTimeRanges.last?.timeRangeValue.end {
                         player.seek(to: liveEnd, toleranceBefore: .zero, toleranceAfter: .zero)
                     }
-                    player.play()
+                    player.playImmediately(atRate: 1.0)
                 }
             }
         }
 
         deinit {
             statusObserver?.invalidate()
-            pipController = nil
         }
     }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
         coordinator.statusObserver?.invalidate()
-        coordinator.pipController = nil
         uiViewController.player?.pause()
         uiViewController.player = nil
     }

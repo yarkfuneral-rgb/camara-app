@@ -848,7 +848,7 @@ pathDefaults:
 paths:
   camara:
     source: publisher
-    runOnInit: '"C:/Users/james/OneDrive/Escritorio/CAMARA PROJECT/ffmpeg.exe" -fflags nobuffer -flags low_delay -i rtsp://192.168.1.9:554/live/ch0 -c:v libx264 -preset ultrafast -tune zerolatency -g 15 -bf 0 -an -f rtsp rtsp://localhost:8554/camara'
+    runOnInit: '"C:/Users/james/OneDrive/Escritorio\CAMARA PROJECT/ffmpeg.exe" -fflags nobuffer -flags low_delay -i rtsp://192.168.1.9:554/live/ch0 -f lavfi -i anullsrc=r=44100:cl=stereo -c:v libx264 -preset ultrafast -tune zerolatency -g 15 -bf 0 -c:a aac -b:a 64k -shortest -f rtsp rtsp://localhost:8554/camara'
     runOnInitRestart: yes
     # Grabacion automatica en tu PC
     record: yes
