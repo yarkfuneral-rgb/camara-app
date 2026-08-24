@@ -24,14 +24,14 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         player.automaticallyWaitsToMinimizeStalling = false
         
         controller.player = player
-        controller.showsPlaybackControls = true
-        controller.allowsPictureInPicturePlayback = true
+        controller.showsPlaybackControls = false // OCULTA POR COMPLETO EL BOTÓN DE PLAY / CONTROLES
+        controller.allowsPictureInPicturePlayback = true // Habilita PiP automático
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.videoGravity = .resizeAspect
         
         context.coordinator.observe(item: item, player: player)
         
-        // Fuerza el inicio inmediato sin pausas
+        // Reproducción directa instantánea sin tocar nada
         player.playImmediately(atRate: 1.0)
         return controller
     }
