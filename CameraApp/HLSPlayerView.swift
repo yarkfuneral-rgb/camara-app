@@ -1,61 +1,39 @@
 import SwiftUI
 import AVKit
 
-struct HLSPlayerView: UIViewRepresentable {
+struct HLSPlayerView: View {
     let url: URL
+    @State private var player: AVPlayer?
 
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .black
-        
-        let player = AVPlayer(url: url)
-        let layer = AVPlayerLayer(player: player)
-        layer.videoGravity = .resizeAspect
-        view.layer.addSublayer(layer)
-        
-        context.coordinator.player = player
-        context.coordinator.layer = layer
-        
-        player.play()
-        return view
-    }
+    var body: some View {
+        ZStack {
+            Color.black
 
-    func updateUIView(_ uiView: UIView, context: Context) {
-        if let player = context.coordinator.player,
-           let currentItem = player.currentItem,
-           let asset = currentItem.asset as? AVURLAsset,
-           asset.url != url {
-            
-            let newItem = AVPlayerItem(url: url)
-            player.replaceCurrentItem(with: newItem)
-            player.play()
+            if let player = player {
+                VideoPlayer(player: player)
+                    .disabled(true) // Deshabilita controles nativos para mantener UI limpia
+            } else {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+            }
         }
-        
-        DispatchQueue.main.async {
-            context.coordinator.layer?.frame = uiView.bounds
+        .onAppear {
+            setupPlayer()
         }
-    }
-
-    func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
-        coordinator.player?.pause()
-        coordinator.player = nil
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator: NSObject {
-        var player: AVPlayer?
-        var layer: AVPlayerLayer?
-
-        override init() {
-            super.init()
-        }
-
-        deinit {
+        .onDisappear {
             player?.pause()
             player = nil
         }
+        .onChange(of: url) { newURL in
+            setupPlayer()
+        }
+    }
+
+    private func setupPlayer() {
+        player?.pause()
+        let newPlayer = AVPlayer(url: url)
+        newPlayer.automaticallyWaitsToMinimizeStalling = false
+        newPlayer.play()
+        self.player = newPlayer
     }
 }
