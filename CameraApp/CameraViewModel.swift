@@ -51,9 +51,29 @@ class CameraViewModel: ObservableObject {
         isConnecting = false
     }
 
+    // Control dual de luces:
+    // 1. Envía directo a http://192.168.1.9:8001 (Funciona en Wi-Fi AUNQUE LA PC ESTÉ APAGADA)
+    // 2. Envía al servidor para cuando estás fuera de casa por internet
     func changeLightMode(to mode: String) {
-        guard let url = URL(string: "\(serverBaseURL)/api/light?action=\(mode)&cam=1") else { return }
-        URLSession.shared.dataTask(with: url).resume()
+        let whiteVal = (mode == "off") ? "off" : (mode == "on" ? "on" : "auto")
+        let irVal = (mode == "off") ? "off" : (mode == "on" ? "on" : "auto")
+        
+        // Petición directa a la cámara en la red local (sin pasar por la PC)
+        if let directLightURL = URL(string: "http://192.168.1.9:8001/whitelight?mode=\(whiteVal)") {
+            var req = URLRequest(url: directLightURL)
+            req.timeoutInterval = 3.0
+            URLSession.shared.dataTask(with: req).resume()
+        }
+        if let directIRURL = URL(string: "http://192.168.1.9:8001/ircut?mode=\(irVal)") {
+            var req = URLRequest(url: directIRURL)
+            req.timeoutInterval = 3.0
+            URLSession.shared.dataTask(with: req).resume()
+        }
+        
+        // Petición de respaldo a través del servidor
+        if let serverURL = URL(string: "\(serverBaseURL)/api/light?action=\(mode)&cam=1") {
+            URLSession.shared.dataTask(with: serverURL).resume()
+        }
     }
 
     func ptzMove(action: String) {
