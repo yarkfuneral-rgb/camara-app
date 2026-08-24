@@ -1,0 +1,9 @@
+# Archivos a ignorar en el repositorio
+recordings/
+mediamtx/mediamtx.exe
+mediamtx/mediamtx
+*.mp4
+*.fmp4
+node_modules/
+.DS_Store
+CameraApp.xcodeproj/
