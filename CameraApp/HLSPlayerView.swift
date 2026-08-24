@@ -18,21 +18,20 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         let asset = AVURLAsset(url: url)
         let item = AVPlayerItem(asset: asset)
         
-        item.preferredForwardBufferDuration = 0.5
+        item.preferredForwardBufferDuration = 1.0
         
         let player = AVPlayer(playerItem: item)
         player.automaticallyWaitsToMinimizeStalling = false
         
         controller.player = player
-        controller.showsPlaybackControls = false // OCULTA POR COMPLETO EL BOTÓN DE PLAY / CONTROLES
-        controller.allowsPictureInPicturePlayback = true // Habilita PiP automático
+        controller.showsPlaybackControls = true // Muestra controles nativos de iOS (Agrandar a pantalla completa y PiP)
+        controller.allowsPictureInPicturePlayback = true // Habilita PiP en iOS
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.videoGravity = .resizeAspect
         
         context.coordinator.observe(item: item, player: player)
         
-        // Reproducción directa instantánea sin tocar nada
-        player.playImmediately(atRate: 1.0)
+        player.play()
         return controller
     }
 
@@ -43,13 +42,13 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
            asset.url != url {
             let newAsset = AVURLAsset(url: url)
             let newItem = AVPlayerItem(asset: newAsset)
-            newItem.preferredForwardBufferDuration = 0.5
+            newItem.preferredForwardBufferDuration = 1.0
             
             let newPlayer = AVPlayer(playerItem: newItem)
             newPlayer.automaticallyWaitsToMinimizeStalling = false
             uiViewController.player = newPlayer
             context.coordinator.observe(item: newItem, player: newPlayer)
-            newPlayer.playImmediately(atRate: 1.0)
+            newPlayer.play()
         }
     }
 
@@ -59,26 +58,43 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
 
     class Coordinator: NSObject {
         var statusObserver: NSKeyValueObservation?
+        var timeObserver: Any?
 
         func observe(item: AVPlayerItem, player: AVPlayer) {
             statusObserver?.invalidate()
+            if let timeObs = timeObserver {
+                player.removeTimeObserver(timeObs)
+            }
+            
             statusObserver = item.observe(\.status, options: [.new]) { item, _ in
                 if item.status == .readyToPlay {
-                    if let liveEnd = item.seekableTimeRanges.last?.timeRangeValue.end {
+                    player.play()
+                }
+            }
+            
+            // Re-sincroniza periódicamente para mantener el stream en vivo sin congelamientos
+            timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 5, preferredTimescale: 1), queue: .main) { _ in
+                if let liveEnd = item.seekableTimeRanges.last?.timeRangeValue.end {
+                    let currentTime = player.currentTime()
+                    let diff = CMTimeGetSeconds(liveEnd) - CMTimeGetSeconds(currentTime)
+                    if diff > 3.0 { // Si el retraso supera los 3 segundos, salta al borde en vivo
                         player.seek(to: liveEnd, toleranceBefore: .zero, toleranceAfter: .zero)
                     }
-                    player.playImmediately(atRate: 1.0)
                 }
             }
         }
 
         deinit {
             statusObserver?.invalidate()
+            statusObserver = nil
         }
     }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
         coordinator.statusObserver?.invalidate()
+        if let timeObs = coordinator.timeObserver {
+            uiViewController.player?.removeTimeObserver(timeObs)
+        }
         uiViewController.player?.pause()
         uiViewController.player = nil
     }
