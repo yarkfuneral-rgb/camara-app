@@ -3,6 +3,8 @@ options:
   bundleIdPrefix: com.micamara
   deploymentTarget:
     iOS: "16.0"
+  xcodeVersion: "15.4"
+  objectVersion: 56
 
 targets:
   CameraApp:

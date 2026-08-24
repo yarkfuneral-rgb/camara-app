@@ -13,6 +13,9 @@ jobs:
       - name: Descargar código
         uses: actions/checkout@v4
 
+      - name: Seleccionar versión de Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
       - name: Instalar XcodeGen
         run: brew install xcodegen
 
