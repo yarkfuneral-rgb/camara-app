@@ -2,13 +2,13 @@ name: CameraApp
 options:
   bundleIdPrefix: com.micamara
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "15.0"
 
 targets:
   CameraApp:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "15.0"
     sources:
       - path: CameraApp
     settings:

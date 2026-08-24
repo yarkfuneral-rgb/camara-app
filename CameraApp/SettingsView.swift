@@ -13,8 +13,8 @@ struct SettingsView: View {
                 Section(header: Text("Servidor")) {
                     TextField("URL del servidor", text: $viewModel.serverBaseURL)
                         .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled(true)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
                     
                     Text("Ejemplo: http://192.168.1.22:3000")
                         .font(.caption)
