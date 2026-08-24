@@ -3,37 +3,40 @@ import AVKit
 
 struct HLSPlayerView: View {
     let url: URL
-    @State private var player: AVPlayer?
 
     var body: some View {
-        ZStack {
-            Color.black
+        LiveAVPlayerView(url: url)
+    }
+}
 
-            if let player = player {
-                VideoPlayer(player: player)
-                    .disabled(true) // Deshabilita controles nativos para mantener UI limpia
-            } else {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-            }
-        }
-        .onAppear {
-            setupPlayer()
-        }
-        .onDisappear {
-            player?.pause()
-            player = nil
-        }
-        .onChange(of: url) { newURL in
-            setupPlayer()
+struct LiveAVPlayerView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let controller = AVPlayerViewController()
+        let player = AVPlayer(url: url)
+        player.automaticallyWaitsToMinimizeStalling = false
+        controller.player = player
+        controller.showsPlaybackControls = false // Oculta controles nativos para reproducción limpia sin botón play
+        controller.videoGravity = .resizeAspect
+        player.play()
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        if let player = uiViewController.player,
+           let currentItem = player.currentItem,
+           let asset = currentItem.asset as? AVURLAsset,
+           asset.url != url {
+            let newPlayer = AVPlayer(url: url)
+            newPlayer.automaticallyWaitsToMinimizeStalling = false
+            uiViewController.player = newPlayer
+            newPlayer.play()
         }
     }
 
-    private func setupPlayer() {
-        player?.pause()
-        let newPlayer = AVPlayer(url: url)
-        newPlayer.automaticallyWaitsToMinimizeStalling = false
-        newPlayer.play()
-        self.player = newPlayer
+    static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: ()) {
+        uiViewController.player?.pause()
+        uiViewController.player = nil
     }
 }
