@@ -341,18 +341,12 @@ hlsAlwaysRemux: true
 # * mpegts - uses MPEG-TS segments, for maximum compatibility.
 # * fmp4 - uses fragmented MP4 segments, more efficient.
 # * lowLatency - uses Low-Latency HLS.
-hlsVariant: lowLatency
+hlsVariant: fmp4
 # Number of HLS segments to keep on the server.
 hlsSegmentCount: 3
 # Minimum duration of each segment.
 hlsSegmentDuration: 1s
 # Minimum duration of each part for Low-Latency HLS.
-hlsPartDuration: 200ms
-# Minimum duration of each part.
-# A player usually puts 3 parts in a buffer before reproducing the stream.
-# Parts are used in Low-Latency HLS in place of segments.
-# Part duration is influenced by the distance between video/audio samples
-# and is adjusted in order to produce segments with a similar duration.
 hlsPartDuration: 200ms
 # Maximum size of each segment.
 # This prevents RAM exhaustion.
@@ -854,7 +848,7 @@ pathDefaults:
 paths:
   camara:
     source: publisher
-    runOnInit: '"C:/Users/james/OneDrive/Escritorio/CAMARA PROJECT/ffmpeg.exe" -i rtsp://192.168.1.9:554/live/ch0 -c:v libx264 -preset ultrafast -tune zerolatency -an -f rtsp rtsp://localhost:8554/camara'
+    runOnInit: '"C:/Users/james/OneDrive/Escritorio/CAMARA PROJECT/ffmpeg.exe" -fflags nobuffer -flags low_delay -i rtsp://192.168.1.9:554/live/ch0 -c:v libx264 -preset ultrafast -tune zerolatency -g 15 -bf 0 -an -f rtsp rtsp://localhost:8554/camara'
     runOnInitRestart: yes
     # Grabacion automatica en tu PC
     record: yes
