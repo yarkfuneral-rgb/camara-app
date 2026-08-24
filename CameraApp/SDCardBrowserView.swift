@@ -8,10 +8,10 @@ struct SDCardBrowserView: View {
         NavigationView {
             Group {
                 if viewModel.isLoadingSD {
-                    ProgressView("Cargando archivos...")
+                    ProgressView("Cargando grabaciones...")
                 } else if viewModel.sdFiles.isEmpty {
                     VStack(spacing: 16) {
-                        Image(systemName: "externaldrive.badge.xmark")
+                        Image(systemName: "film.stack")
                             .font(.system(size: 50))
                             .foregroundColor(.gray)
                         Text("Sin grabaciones disponibles")
@@ -41,7 +41,7 @@ struct SDCardBrowserView: View {
                     }
                 }
             }
-            .navigationTitle("Grabaciones SD")
+            .navigationTitle("Grabaciones")
             .task {
                 await viewModel.loadSDFiles()
             }
@@ -53,6 +53,14 @@ struct SDFileRow: View {
     let file: SDFile
     let baseURL: String
     @State private var showPlayer = false
+    
+    private var fullRecordingURL: URL? {
+        if file.url.hasPrefix("http") {
+            return URL(string: file.url)
+        } else {
+            return URL(string: "\(baseURL)\(file.url)")
+        }
+    }
     
     var body: some View {
         HStack {
@@ -82,11 +90,11 @@ struct SDFileRow: View {
         }
         .padding(.vertical, 4)
         .sheet(isPresented: $showPlayer) {
-            if let fullURL = URL(string: file.url) {
-                VideoPlayerView(url: fullURL)
+            if let targetURL = fullRecordingURL {
+                VideoPlayerView(url: targetURL)
                     .edgesIgnoringSafeArea(.all)
             } else {
-                Text("Error: URL inválida")
+                Text("Error: URL de grabación inválida")
             }
         }
     }
@@ -104,6 +112,5 @@ struct VideoPlayerView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        // No necesita actualizaciones dinámicas en este caso
     }
 }

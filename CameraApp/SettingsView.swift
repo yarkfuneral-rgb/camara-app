@@ -16,7 +16,7 @@ struct SettingsView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled(true)
                     
-                    Text("Ejemplo: http://192.168.1.9:3000")
+                    Text("Ejemplo: http://192.168.1.22:3000")
                         .font(.caption)
                         .foregroundColor(.gray)
                     
@@ -37,7 +37,7 @@ struct SettingsView: View {
                         Text("Stream:")
                             .font(.caption)
                             .fontWeight(.bold)
-                        Text("\(viewModel.serverBaseURL.replacingOccurrences(of: \":3000\", with: \":8888\"))/camara/index.m3u8")
+                        Text(streamPreview)
                             .font(.caption2)
                             .foregroundColor(.gray)
                         
@@ -55,7 +55,7 @@ struct SettingsView: View {
                         Text("Grabaciones:")
                             .font(.caption)
                             .fontWeight(.bold)
-                        Text("\(viewModel.serverBaseURL)/api/sd/files")
+                        Text("\(viewModel.serverBaseURL)/api/recordings")
                             .font(.caption2)
                             .foregroundColor(.gray)
                     }
@@ -69,8 +69,13 @@ struct SettingsView: View {
         }
     }
     
+    private var streamPreview: String {
+        let base = viewModel.serverBaseURL.replacingOccurrences(of: ":3000", with: ":8888")
+        return "\(base)/camara/index.m3u8"
+    }
+    
     private func testConnection() {
-        guard let url = URL(string: "\(viewModel.serverBaseURL)/api/ptz?action=stop&cam=1") else {
+        guard let url = URL(string: "\(viewModel.serverBaseURL)/api/status") else {
             alertTitle = "Error"
             alertMessage = "La URL ingresada no es válida"
             showAlert = true
