@@ -3,7 +3,7 @@ name: Compilar App iOS
 on:
   push:
     branches: [main]
-  workflow_dispatch:   # permite correrlo manualmente desde GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,29 +19,29 @@ jobs:
       - name: Generar proyecto Xcode
         run: xcodegen generate
 
-      - name: Compilar (sin firma)
+      - name: Compilar App iOS
         run: |
-          xcodebuild archive \
+          xcodebuild build \
             -project CameraApp.xcodeproj \
             -scheme CameraApp \
-            -archivePath "$RUNNER_TEMP/CameraApp.xcarchive" \
-            -destination "generic/platform=iOS" \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            -allowProvisioningUpdates 2>&1 | tail -50
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
 
       - name: Crear IPA
         run: |
-          cd "$RUNNER_TEMP"
           mkdir -p Payload
-          cp -r CameraApp.xcarchive/Products/Applications/CameraApp.app Payload/
+          cp -r build/Build/Products/Release-iphoneos/CameraApp.app Payload/
           zip -r CameraApp.ipa Payload/
-          echo "IPA creado: $(du -sh CameraApp.ipa | cut -f1)"
+          echo "IPA generado correctamente"
 
       - name: Subir IPA como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: CameraApp-IPA
-          path: ${{ runner.temp }}/CameraApp.ipa
+          path: CameraApp.ipa
           retention-days: 30

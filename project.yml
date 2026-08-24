@@ -3,30 +3,21 @@ options:
   bundleIdPrefix: com.micamara
   deploymentTarget:
     iOS: "16.0"
-  xcodeVersion: "15.4"
-  createIntermediateGroups: true
-
-settings:
-  base:
-    SWIFT_VERSION: "5.9"
-    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
-    ENABLE_BITCODE: NO
 
 targets:
   CameraApp:
     type: application
     platform: iOS
+    deploymentTarget: "16.0"
     sources:
       - path: CameraApp
-        excludes:
-          - "**/.DS_Store"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.micamara.app
         INFOPLIST_FILE: CameraApp/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGN_IDENTITY: ""
+        AD_HOC_CODE_SIGNING_ALLOWED: "YES"
