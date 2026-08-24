@@ -14,12 +14,18 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
-        let player = AVPlayer(url: url)
+        let asset = AVURLAsset(url: url)
+        let item = AVPlayerItem(asset: asset)
+        
+        // Mantiene el buffer mínimo de 1s para eliminar el retraso/lag
+        item.preferredForwardBufferDuration = 1.0
+        
+        let player = AVPlayer(playerItem: item)
         player.automaticallyWaitsToMinimizeStalling = false
         
         controller.player = player
-        controller.showsPlaybackControls = true // Muestra controles: Agrandar (pantalla completa) y Play
-        controller.allowsPictureInPicturePlayback = true // Habilita Picture-in-Picture (PiP)
+        controller.showsPlaybackControls = true
+        controller.allowsPictureInPicturePlayback = true
         controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.videoGravity = .resizeAspect
         
@@ -32,7 +38,11 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
            let currentItem = player.currentItem,
            let asset = currentItem.asset as? AVURLAsset,
            asset.url != url {
-            let newPlayer = AVPlayer(url: url)
+            let newAsset = AVURLAsset(url: url)
+            let newItem = AVPlayerItem(asset: newAsset)
+            newItem.preferredForwardBufferDuration = 1.0
+            
+            let newPlayer = AVPlayer(playerItem: newItem)
             newPlayer.automaticallyWaitsToMinimizeStalling = false
             uiViewController.player = newPlayer
             newPlayer.play()
