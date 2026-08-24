@@ -16,9 +16,13 @@ struct LiveAVPlayerView: UIViewControllerRepresentable {
         let controller = AVPlayerViewController()
         let player = AVPlayer(url: url)
         player.automaticallyWaitsToMinimizeStalling = false
+        
         controller.player = player
-        controller.showsPlaybackControls = false
+        controller.showsPlaybackControls = true // Muestra controles: Agrandar (pantalla completa) y Play
+        controller.allowsPictureInPicturePlayback = true // Habilita Picture-in-Picture (PiP)
+        controller.canStartPictureInPictureAutomaticallyFromInline = true
         controller.videoGravity = .resizeAspect
+        
         player.play()
         return controller
     }
