@@ -11,6 +11,8 @@ targets:
     deploymentTarget: "15.0"
     sources:
       - path: CameraApp
+        excludes:
+          - "Info.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.micamara.app
